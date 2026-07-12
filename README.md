@@ -1,98 +1,67 @@
-# vinext-starter
+# 東雲地方気象資料室
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+フィクションの Web 探索型 ARG（Alternative Reality Game）。  
+プレイヤーは「東雲地方気象資料室」の公開システムを通じ、気象記録・施設台帳・行政文書を横断調査し、02:13 の欠番に隠された真相を解明する。
 
-## Prerequisites
+## 概要
 
-- Node.js `>=22.13.0`
+| 項目         | 内容                           |
+| ------------ | ------------------------------ |
+| ジャンル     | Web 探索型 ARG                 |
+| 言語         | 日本語                         |
+| データ永続化 | `localStorage`（サーバー不要） |
+| 外部依存     | なし（API・ログイン・DB なし） |
 
-## Quick Start
+### ディレクトリ構成
+
+```
+app/
+├── page.tsx               # エントリーポイント（状態管理・レイアウト）
+├── types.ts               # 共有型・定数
+├── archive-data.tsx       # ゲームデータ（資料・ルート・ヒント）
+├── globals.css            # グローバルスタイル
+├── layout.tsx             # ルートレイアウト
+└── components/
+    ├── Modal.tsx          # 汎用モーダルラッパー
+    ├── RecordCard.tsx     # 資料カード
+    ├── Sidebar.tsx        # サイドバー
+    ├── views/             # ページビュー（Home / About / Stations / News / Records）
+    └── modals/            # モーダル（Notebook / Guide / Safety）
+```
+
+## 環境構築
+
+### 必要なもの
+
+- **Node.js** `>=22.13.0`
+
+### セットアップ
 
 ```bash
+# 依存のインストール
 npm install
+
+# 開発サーバーの起動（http://localhost:3000）
 npm run dev
-npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+### その他のコマンド
 
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm run build         # プロダクションビルド
+npm run lint          # ESLint による静的解析（Prettier 連携）
+npm run format        # Prettier によるコードの自動整形
+npm run format:check  # フォーマットのチェック
+npm run test          # Vitest によるテストの実行（1回）
+npm run test:watch    # Vitest によるテストの監視モード起動
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+## 自動化機能 (Lint / Format)
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+### 保存時の自動実行 (VS Code 用)
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+`.vscode/settings.json` の設定により、VS Code 上でファイルを保存した際、Prettier による自動整形および ESLint による自動修正 (`--fix`) が実行されます。
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+### コミット時の自動検証 (Git Hooks)
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+`husky` と `lint-staged` により、`git commit` の実行時、コミット対象（ステージングされたファイル）に対してのみ自動的に Lint チェックと Prettier によるフォーマットが走ります。ルールエラーがある場合はコミットが自動で中断されるため、不完全なコードの混入を防ぐことができます。
