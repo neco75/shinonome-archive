@@ -3,6 +3,8 @@
 フィクションの Web 探索型 ARG（Alternative Reality Game）。  
 プレイヤーは「東雲地方気象資料室」の公開システムを通じ、気象記録・施設台帳・行政文書を横断調査し、02:13 の欠番に隠された真相を解明する。
 
+https://shinonome-archive.pages.dev/
+
 ## 概要
 
 | 項目         | 内容                           |
